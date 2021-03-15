@@ -306,26 +306,23 @@ else ()
    endif ()
 endif ()
 
+#     ${dir}/url.c  auth.c cookies.c cache.c ebjs.c
 set(${name}_SRCS
     ${dir}/main.c
     ${dir}/buffers.c
     ${dir}/sendmail.c
     ${dir}/fetchmail.c
     ${dir}/messages.c
-    ${dir}/url.c
     ${dir}/stringfile.c
     ${dir}/html-tidy.c
     ${dir}/decorate.c
     ${dir}/http.c
-    ${dir}/auth.c
     ${dir}/css.c
 	${dir}/html.c
     ${dir}/format.c
-    ${dir}/cookies.c
-    ${dir}/cache.c
-    ${dir}/ebjs.c
     ${dir}/plugin.c
     ${dir}/jseng-duk.c
+    ${dir}/isup.c
     ${ODBC_SRCS}
     ${GEN_SOURCES}
     )
@@ -335,8 +332,8 @@ set(${name}_HDRS
     ${dir}/messages.h
     )
 if (MSVC)
-    list(APPEND ${name}_SRCS win32/vsprtf.c win32/dirent.c)
-    list(APPEND ${name}_HDRS win32/vsprtf.h win32/dirent.h)
+    list(APPEND ${name}_SRCS win32/vsprtf.c win32/dirent.c win32/strcasestr.c)
+    list(APPEND ${name}_HDRS win32/vsprtf.h win32/dirent.h win32/strcasestr.h)
     include_directories( win32 )
 endif ()
 add_executable( ${name} ${${name}_SRCS} ${${name}_HDRS} )

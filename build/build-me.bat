@@ -1,11 +1,11 @@
 @setlocal
-
+@set TMPPRJ=edbrowse
+@set TMPPROJ=%TMPPRJ% fork/win-bld
 @set DOTINST=0
 @set DOINSTALL=0
 
 @set TMPRT=..
 @set TMPVER=1
-@set TMPPRJ=edbrowse
 @set TMPSRC=%TMPRT%
 @set TMPBGN=%TIME%
 @set TMPINS=..\..\3rdParty.x64
@@ -23,6 +23,7 @@
 @set TMPLOG=bldlog-1.txt
 
 @set TMPOPTS=-DCMAKE_INSTALL_PREFIX=%TMPINS%
+@set TMPOPTS=%TMPOPTS% -DCMAKE_VERBOSE_MAKEFILE=ON
 @REM 20151031 - Add OSBC support in WIN32 build
 @set TMPOPTS=%TMPOPTS% -DBUILD_EDBR_ODBC:BOOL=ON
 
@@ -33,9 +34,9 @@
 @goto RPT
 :GOTCMD
 
-@echo Build %DATE% %TIME% > %TMPLOG%
-@echo Build source %TMPSRC%... all output to build log %TMPLOG%
-@echo Build source %TMPSRC%... all output to build log %TMPLOG% >> %TMPLOG%
+@echo Build %TMPPROJ% %DATE% %TIME% > %TMPLOG%
+@echo Build source %TMPSRC% on %DATE% - all output to build log %TMPLOG%
+@echo Build source %TMPSRC% on %DATE% - all output to build log %TMPLOG% >> %TMPLOG%
 
 cmake %TMPSRC% %TMPOPTS% >> %TMPLOG% 2>&1
 @if ERRORLEVEL 1 goto ERR1
