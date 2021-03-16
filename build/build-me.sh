@@ -1,7 +1,29 @@
 #!/bin/sh
-#< build-me.sh - 20150925 - for edbrowse project
+#< build-me.sh - 20210316 - 20150925 - for edbrowse project
 BN="`basename $0`"
 BLDLOG="bldlog-1.txt"
+TMPBR="master"
+
+echo "$BN: Checking on branch '$TMPBR'..."
+chkbranch "$TMPBR"
+if [ "$?" = "0" ]; then
+    echo "$BN: Appear to be on correct branch..."
+else
+    echo "$BN: Not on correct branch '$TMPBR'!"
+    git checkout "$TMPBR"
+    if [ ! "$?" = "0" ]; then
+        echo "$BN: Oops! FAILED to checkout $TMPBR!"
+        exit 1
+    fi
+    chkbranch "$TMPBR"
+    if [ "$?" = "0" ]; then
+        echo "$BN: Appear got to correct branch '$TMPBR'... continuing..."
+    else
+        echo "$BN: Oops! FAILED to checkout $TMPBR!"
+        exit 1
+    fi
+fi
+
 
 if [ -f "$BLDLOG" ]; then
     rm -f "$BLDLOG"
