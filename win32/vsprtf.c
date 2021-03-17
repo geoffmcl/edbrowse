@@ -77,29 +77,4 @@ int vasprintf (char **str, const char *fmt, va_list args)
     return size;
 }
 
-/* SPECIAL CASE ONLY */
-// #if (defined(_MSC_VER) && defined(NDEBUG))
-#if defined(_MSC_VER)
-/*  ***********************************************************************
-    20171108: NOTE: At present this is defined in static libtidy, but only 
-    in the Debug version. So this is a substitute for other than
-    the Debug version. This is an 'unofficial' extern in static Debug 
-    libtidy, NOT part of the API, so may change in future!
-    *********************************************************************** */
-int gettimeofday(struct timeval *tp, void *tzp)
-{
-#ifdef WIN32
-    struct _timeb timebuffer;
-    _ftime(&timebuffer);
-    tp->tv_sec = (long)timebuffer.time;
-    tp->tv_usec = timebuffer.millitm * 1000;
-#else
-    tp->tv_sec = time(NULL);
-    tp->tv_usec = 0;
-#endif
-    return 0;
-}
-
-#endif /* _MSC_VER */
-
 // eof = vsprtf.cxx

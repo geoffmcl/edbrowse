@@ -66,7 +66,7 @@ set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MSVC_LD_FLAGS}" )
 #  TIDY_FOUND          - True if tidy found.
 #  TIDY_INCLUDE_DIRS   - where to find tidy.h, etc.
 #  TIDY_LIBRARIES      - List of libraries when using tidy.
-find_package( Tidy )
+find_package(TIDY)
 if (TIDY_FOUND)
     message(STATUS "*** Tidy found inc ${TIDY_INCLUDE_DIRS} lib ${TIDY_LIBRARIES}")
     include_directories( ${TIDY_INCLUDE_DIRS} )
@@ -111,7 +111,7 @@ endif ()
 # READLINE_INCLUDE_DIR
 # READLINE_LIBRARY
 # HAVE_READLINE_H
-find_package(Readline)
+find_package(READLINE)
 if (READLINE_FOUND)
     message( STATUS "*** READLINE found inc ${READLINE_INCLUDE_DIR} lib ${READLINE_LIBRARY}" )
     add_definitions( -DHAVE_READLINE_H )
@@ -127,7 +127,7 @@ endif ()
 # DUKTAPE_FOUND
 # DUKTAPE_LIBRARY
 # DUKTAPE_INCLUDE_DIR
-find_package(Duktape)
+find_package(DUKTAPE)
 if (DUKTAPE_FOUND)
     message( STATUS "*** Duktape found inc ${DUKTAPE_INCLUDE_DIR} lib ${DUKTAPE_LIBRARY}" )
     include_directories( ${DUKTAPE_INCLUDE_DIR} )
@@ -141,6 +141,22 @@ if (DUKTAPE_FOUND)
     endif()
 else ()
     message( FATAL_ERROR "*** Duktape NOT FOUND, unable to proceed")
+endif ()
+
+# QUICKJS_FOUND
+# QUICKJS_INCLUDE_DIR
+# QUICKJS_LIBRARY
+find_package(QUICKJS)
+if (QUICKJS_FOUND)
+    message( STATUS "*** QUICKJS found inc ${QUICKJS_INCLUDE_DIR} lib ${QUICKJS_LIBRARY}" )
+    add_definitions( -DHAVE_QUICKJS_H )
+    if (NOT BUILD_SHARED_LIB)
+        add_definitions( -DQUICKJS_STATIC )
+    endif ()
+    include_directories( ${QUICKJS_INCLUDE_DIR} )
+    list( APPEND add_LIBS ${QUICKJS_LIBRARY} )
+else ()
+    message(WARNING "*** QUICKJS NOT FOUND - qjs component will not be built!")
 endif ()
 
 if (WIN32)
@@ -306,9 +322,10 @@ else ()
    endif ()
 endif ()
 
+set(name libeb)
+set(dir src)
 #     ${dir}/url.c  auth.c cookies.c cache.c ebjs.c
 set(${name}_SRCS
-    ${dir}/main.c
     ${dir}/buffers.c
     ${dir}/sendmail.c
     ${dir}/fetchmail.c
@@ -321,13 +338,11 @@ set(${name}_SRCS
 	${dir}/html.c
     ${dir}/format.c
     ${dir}/plugin.c
-    ${dir}/jseng-duk.c
     ${dir}/isup.c
     ${ODBC_SRCS}
     ${GEN_SOURCES}
     )
 set(${name}_HDRS
-    ${dir}/eb.h
     ${dir}/ebprot.h
     ${dir}/messages.h
     )
@@ -336,6 +351,19 @@ if (MSVC)
     list(APPEND ${name}_HDRS win32/vsprtf.h win32/dirent.h win32/strcasestr.h)
     include_directories( win32 )
 endif ()
+add_library( ${name} ${${name}_SRCS} ${${name}_HDRS} )
+list(APPEND add_LIBS ${name})
+
+set(name edbrowse)
+set(dir src)
+#     ${dir}/url.c  auth.c cookies.c cache.c ebjs.c
+set(${name}_SRCS
+    ${dir}/main.c
+    ${dir}/jseng-duk.c
+    )
+set(${name}_HDRS
+    ${dir}/eb.h
+    )
 add_executable( ${name} ${${name}_SRCS} ${${name}_HDRS} )
 if (add_LIBS OR extra_LIBS)
     target_link_libraries( ${name} ${add_LIBS} ${extra_LIBS} )
@@ -344,5 +372,40 @@ if (MSVC)
     set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
 endif ()
 install(TARGETS ${name} DESTINATION bin)
+
+if (QUICKJS_FOUND)
+    # js_hello_quick.c
+    set(name js_hello_quick)
+    set(dir src)
+    set(${name}_SRCS
+        ${dir}/${name}.c
+        )
+    add_executable( ${name} ${${name}_SRCS} )
+    if (add_LIBS OR extra_LIBS)
+        target_link_libraries( ${name} ${add_LIBS} ${extra_LIBS} )
+    endif ()
+    if (MSVC)
+        set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+    endif ()
+    #install(TARGETS ${name} DESTINATION bin)
+    
+endif(QUICKJS_FOUND)
+
+if (DUKTAPE_FOUND)
+# js_hello_duk
+ set(name js_hello_duk)
+    set(dir src)
+    set(${name}_SRCS
+        ${dir}/${name}.c
+        )
+    add_executable( ${name} ${${name}_SRCS} )
+    if (add_LIBS OR extra_LIBS)
+        target_link_libraries( ${name} ${add_LIBS} ${extra_LIBS} )
+    endif ()
+    if (MSVC)
+        set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+    endif ()
+    #install(TARGETS ${name} DESTINATION bin)
+endif (DUKTAPE_FOUND)
 
 # eof

@@ -6,8 +6,8 @@
 #include "eb.h"
 
 #ifdef _MSC_VER			// sleep(secs) macro
+#include <sys/timeb.h>
 #define SLEEP(a) Sleep(a * 1000)
-extern int gettimeofday(struct timeval *tp, void *tzp);	// from tidys.lib
 #else // !_MSC_VER
 #define SLEEP sleep
 #endif // _MSC_VER y/n
@@ -17,6 +17,32 @@ extern int gettimeofday(struct timeval *tp, void *tzp);	// from tidys.lib
 #if defined(__APPLE__) || defined(__ANDROID__) || defined(__FreeBSD__)
 #define pthread_tryjoin_np pthread_join
 #endif
+
+/* SPECIAL CASE ONLY */
+#if defined(_MSC_VER)
+/*  ***********************************************************************
+	20171108: NOTE: This was defined in static libtidy, but only
+	in the Debug version. So this is a substitute for other than
+	the Debug version. This is an 'unofficial' extern in static Debug
+	libtidy, NOT part of the API, so may change in future!
+	*********************************************************************** */
+static int gettimeofday(struct timeval* tp, void* tzp)
+{
+#ifdef WIN32
+	struct _timeb timebuffer;
+	_ftime(&timebuffer);
+	tp->tv_sec = (long)timebuffer.time;
+	tp->tv_usec = timebuffer.millitm * 1000;
+#else
+	tp->tv_sec = time(NULL);
+	tp->tv_usec = 0;
+#endif
+	return 0;
+}
+
+#endif /* _MSC_VER */
+
+
 
 uchar browseLocal;
 bool showHover, doColors;
