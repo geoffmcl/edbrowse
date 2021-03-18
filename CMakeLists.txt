@@ -1,3 +1,4 @@
+# 20210318 - For MSVC, build 'common' lib, to facilitate multiple EXE builds. Add QuickJS build...
 # 20170727 - Reviewed warning list...
 # CMakeLists.txt generated 2015/09/20 00:38:06
 # by make2cmake.pl from F:\Projects\edbrowse\makefile
@@ -324,8 +325,8 @@ endif ()
 
 set(name libeb)
 set(dir src)
-#     ${dir}/url.c  auth.c cookies.c cache.c ebjs.c
-set(${name}_SRCS
+# removed ${dir}/url.c  auth.c cookies.c cache.c ebjs.c
+set(COMMON_SRCS
     ${dir}/buffers.c
     ${dir}/sendmail.c
     ${dir}/fetchmail.c
@@ -342,21 +343,22 @@ set(${name}_SRCS
     ${ODBC_SRCS}
     ${GEN_SOURCES}
     )
-set(${name}_HDRS
+set(COMMON_HDRS
     ${dir}/ebprot.h
     ${dir}/messages.h
     )
 if (MSVC)
-    list(APPEND ${name}_SRCS win32/vsprtf.c win32/dirent.c win32/strcasestr.c)
-    list(APPEND ${name}_HDRS win32/vsprtf.h win32/dirent.h win32/strcasestr.h)
+    list(APPEND COMMON_SRCS win32/vsprtf.c win32/dirent.c win32/strcasestr.c)
+    list(APPEND COMMON_HDRS win32/vsprtf.h win32/dirent.h win32/strcasestr.h)
     include_directories( win32 )
 endif ()
-add_library( ${name} ${${name}_SRCS} ${${name}_HDRS} )
+if (MSVC)
+add_library( ${name} ${COMMON_SRCS} ${COMMON_HDRS} )
 list(APPEND add_LIBS ${name})
+endif ()
 
 set(name edbrowse)
 set(dir src)
-#     ${dir}/url.c  auth.c cookies.c cache.c ebjs.c
 set(${name}_SRCS
     ${dir}/main.c
     ${dir}/jseng-duk.c
@@ -364,6 +366,10 @@ set(${name}_SRCS
 set(${name}_HDRS
     ${dir}/eb.h
     )
+if (NOT MSVC)
+    list(APPEND ${name}_SRCS ${COMMON_SRCS})
+    list(APPEND ${name}_HDRS ${COMMON_SRCS})
+endif ()
 add_executable( ${name} ${${name}_SRCS} ${${name}_HDRS} )
 if (add_LIBS OR extra_LIBS)
     target_link_libraries( ${name} ${add_LIBS} ${extra_LIBS} )
@@ -409,3 +415,4 @@ if (DUKTAPE_FOUND)
 endif (DUKTAPE_FOUND)
 
 # eof
+
