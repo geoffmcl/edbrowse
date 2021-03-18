@@ -414,5 +414,28 @@ if (DUKTAPE_FOUND)
     #install(TARGETS ${name} DESTINATION bin)
 endif (DUKTAPE_FOUND)
 
-# eof
+if (QUICKJS_FOUND)
+set(name eb-qjs)
+set(dir src)
+set(${name}_SRCS
+    ${dir}/main.c
+    ${dir}/jseng-quick.c
+    )
+set(${name}_HDRS
+    ${dir}/eb.h
+    )
+if (NOT MSVC)
+    list(APPEND ${name}_SRCS ${COMMON_SRCS})
+    list(APPEND ${name}_HDRS ${COMMON_SRCS})
+endif ()
+add_executable( ${name} ${${name}_SRCS} ${${name}_HDRS} )
+if (add_LIBS OR extra_LIBS)
+    target_link_libraries( ${name} ${add_LIBS} ${extra_LIBS} )
+endif ()
+if (MSVC)
+    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+endif ()
+# install(TARGETS ${name} DESTINATION bin)
+endif (QUICKJS_FOUND)
 
+# eof
