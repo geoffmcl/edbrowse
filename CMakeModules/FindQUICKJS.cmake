@@ -10,7 +10,7 @@
 set(_LIB_NAME quickjs)
 
 FIND_PATH(QUICKJS_INCLUDE_DIR quickjs/quickjs-libc.h
-    PATH_SUFFIXES include/quickjs 
+    PATH_SUFFIXES include/quickjs quickjs
   )
 if (MSVC)
     FIND_LIBRARY(QUICKJS_LIB_DBG NAMES ${_LIB_NAME}d)
@@ -26,8 +26,13 @@ if (MSVC)
         endif ()
     endif ()
 else ()
-    FIND_LIBRARY(QUICKJS_LIBRARY NAMES ${_LIB_NAME})
+    FIND_LIBRARY(QUICKJS_LIBRARY
+        NAMES libquickjs.a ${_LIB_NAME}
+        HINTS ENV QUICKJS_ROOT
+        )
 endif ()
+
+message(STATUS "*** Res: inc '${QUICKJS_INCLUDE_DIR}', lib '${QUICKJS_LIBRARY}'")
 
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(QUICKJS DEFAULT_MSG QUICKJS_INCLUDE_DIR QUICKJS_LIBRARY )

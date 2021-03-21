@@ -54,6 +54,7 @@ if(WIN32)
 else()
     # unix/mac stuff - reviewed 20170727 - none at this time
     # set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-unused-but-set-variable -Wno-unused-variable")
+    list(APPEND extra_LIBS m dl)
 endif()
 
 if (CMAKE_SYSTEM_NAME MATCHES "Linux")
