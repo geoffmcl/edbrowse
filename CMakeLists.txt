@@ -66,7 +66,7 @@ set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MSVC_LD_FLAGS}" )
 #  TIDY_FOUND          - True if tidy found.
 #  TIDY_INCLUDE_DIRS   - where to find tidy.h, etc.
 #  TIDY_LIBRARIES      - List of libraries when using tidy.
-find_package( Tidy )
+find_package( TIDY )
 if (TIDY_FOUND)
     message(STATUS "*** Tidy found inc ${TIDY_INCLUDE_DIRS} lib ${TIDY_LIBRARIES}")
     include_directories( ${TIDY_INCLUDE_DIRS} )
@@ -111,7 +111,7 @@ endif ()
 # READLINE_INCLUDE_DIR
 # READLINE_LIBRARY
 # HAVE_READLINE_H
-find_package(Readline)
+find_package(READLINE)
 if (READLINE_FOUND)
     message( STATUS "*** READLINE found inc ${READLINE_INCLUDE_DIR} lib ${READLINE_LIBRARY}" )
     add_definitions( -DHAVE_READLINE_H )
@@ -127,7 +127,7 @@ endif ()
 # DUKTAPE_FOUND
 # DUKTAPE_LIBRARY
 # DUKTAPE_INCLUDE_DIR
-find_package(Duktape)
+find_package(DUKTAPE)
 if (DUKTAPE_FOUND)
     message( STATUS "*** Duktape found inc ${DUKTAPE_INCLUDE_DIR} lib ${DUKTAPE_LIBRARY}" )
     include_directories( ${DUKTAPE_INCLUDE_DIR} )
@@ -274,19 +274,11 @@ if (UNIX)
     install(FILES doc/usersguide.html doc/usersguide_fr.html doc/sample.ebrc doc/sample_fr.ebrc doc/sample_it.ebrc DESTINATION ${UnixDocDir})
 endif ()
 
-###########################################################
-### edbr static library of shared source - not currently used.
-#  set(name edbr-lib)
-#  set(dir src)
-#  set(${name}_SRCS
-#      ${dir}/foo.c
-#      )
-#  add_library( ${name} ${${name}_SRCS} )
-#  set(add_LIBS ${name} ${add_LIBS})
-
 #######################################################
 ### main edbrowse app
-set(name edbrowse)
+###########################################################
+### 20210323: edbr-com - static library of COMMON sources
+set(name edbr-com)
 set(dir src)
 set(ODBC_SRCS ${dir}/dbstubs.c) # set default stubs source
 if (BUILD_EDBR_ODBC) # if the user OPTION ON
@@ -306,9 +298,7 @@ else ()
    endif ()
 endif ()
 
-#     ${dir}/url.c  auth.c cookies.c cache.c ebjs.c
-set(${name}_SRCS
-    ${dir}/main.c
+set(COMMON_SRCS
     ${dir}/buffers.c
     ${dir}/sendmail.c
     ${dir}/fetchmail.c
@@ -321,10 +311,27 @@ set(${name}_SRCS
 	${dir}/html.c
     ${dir}/format.c
     ${dir}/plugin.c
-    ${dir}/jseng-duk.c
     ${dir}/isup.c
     ${ODBC_SRCS}
     ${GEN_SOURCES}
+    )
+if (MSVC)
+    list(APPEND COMMON_SRCS win32/vsprtf.c win32/dirent.c win32/strcasestr.c)
+    include_directories( win32 )
+endif ()
+add_library( ${name} STATIC ${COMMON_SRCS} )
+if (add_LIBS OR extra_LIBS)
+    target_link_libraries( ${name} ${add_LIBS} ${extra_LIBS} )
+endif ()
+list(APPEND add_LIBS ${name})
+
+# Now create EXE
+set(name edbrowse)
+set(dir src)
+#     ${dir}/url.c  auth.c cookies.c cache.c ebjs.c
+set(${name}_SRCS
+    ${dir}/main.c
+    ${dir}/jseng-duk.c
     )
 set(${name}_HDRS
     ${dir}/eb.h
@@ -332,9 +339,7 @@ set(${name}_HDRS
     ${dir}/messages.h
     )
 if (MSVC)
-    list(APPEND ${name}_SRCS win32/vsprtf.c win32/dirent.c win32/strcasestr.c)
     list(APPEND ${name}_HDRS win32/vsprtf.h win32/dirent.h win32/strcasestr.h)
-    include_directories( win32 )
 endif ()
 add_executable( ${name} ${${name}_SRCS} ${${name}_HDRS} )
 if (add_LIBS OR extra_LIBS)
@@ -346,3 +351,4 @@ endif ()
 install(TARGETS ${name} DESTINATION bin)
 
 # eof
+
